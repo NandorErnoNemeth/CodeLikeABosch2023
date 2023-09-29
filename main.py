@@ -1,4 +1,5 @@
 import pandas as pd
+import math
 
 df = pd.read_excel('DevelopmentData.xlsx')
 lista = df.columns.to_list()
@@ -38,6 +39,8 @@ def change_to_si(df: pd.DataFrame):
     speeds = [elem for elem in old_columns if 'Speed' in elem]
 
     df[speeds] = df[speeds] / 256
+
+    df['YawRate'] = df['YawRate'] * (180 / math.pi)
 
     return df
 
