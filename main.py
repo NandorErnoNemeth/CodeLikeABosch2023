@@ -28,4 +28,17 @@ def convert_columns(df : pd.DataFrame):
 
     return df
 
+def change_to_si(df: pd.DataFrame):
+    old_columns = df.columns.to_list()
+
+    obj_dist = [elem for elem in old_columns if 'ObjectDistance' in elem]
+
+    df[obj_dist] = df[obj_dist] / 128
+
+    speeds = [elem for elem in old_columns if 'Speed' in elem]
+
+    df[speeds] = df[speeds] / 256
+
+    return df
+
 convert_columns(df)
