@@ -175,6 +175,7 @@ def save_scenario(csv_path: str, data: pd.DataFrame, relevant_event: ObjectWithM
     data['Scenario'] = None
     index_to_update = data[data['Timestamp'] == scenario_timestamp].index[0]
     data.loc[index_to_update, 'Scenario'] = f'{relevant_event.id}_{scenario}'
+    data.to_csv('result.csv')
     return data
 
 def main():
