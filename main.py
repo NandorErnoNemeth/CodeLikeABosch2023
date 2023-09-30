@@ -169,6 +169,12 @@ def classify_event(data: pd.DataFrame) -> ObjectWithMotion:
                     scenario_timestamp = timestamp
     return relevant_object, scenario, scenario_timestamp
 
+def save_scenario(csv_path: str, data: pd.DataFrame, relevant_event: ObjectWithMotion, scenario: str, scenario_timestamp: float):
+    """Saves the scenario to the .csv file"""
+    data['Scenario'] = None
+    index_to_update = data[data['Timestamp'] == scenario_timestamp].index[0]
+    data.loc[index_to_update, 'Scenario'] = f'{relevant_event.id}_{scenario}'
+    data.to_csv(csv_path)
 
 def main():
     args = parser.parse_args()
@@ -177,6 +183,7 @@ def main():
     print(
         f"At {scenario_timestamp}: object {relevant_event.id} got into scenario {scenario}"
     )
+    save_scenario(args.csv_path, data, relevant_event, scenario, scenario_timestamp)
 
 
 if __name__ == "__main__":
