@@ -2,29 +2,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import math 
 
-def visualize(filename='DevelopmentData.xlsx', N=5):
+def visualize(df, N=5):
     # Init subplots
     fig, (ax, ax_speed, ax_path) = plt.subplots(1, 3, figsize=(20, 6))
     
     current_idx = 0
     play_mode = False  # Flag to check if video mode is on
     timer = fig.canvas.new_timer(interval=50) 
-
-    def convert_df() -> pd.DataFrame:
-        df = pd.read_excel(filename)
-
-        if 'Unnamed: 0' in df.columns.to_list():
-            df = df.drop(columns=['Unnamed: 0'])
-
-        old_columns = df.columns.to_list()
-
-        obj_dist = [elem for elem in old_columns if 'ObjectDistance' in elem]
-        df[obj_dist] = df[obj_dist] / 128
-
-        speeds = [elem for elem in old_columns if 'Speed' in elem]
-        df[speeds] = df[speeds] / 256
-
-        return df
 
     def calculate_coordinates(speed, yaw, timestamps):
         x, y = 0, 0
@@ -70,6 +54,10 @@ def visualize(filename='DevelopmentData.xlsx', N=5):
         for n in range(1, N+1):
             if idx - n >= 0:
                 plot_row(idx - n, ax, alpha_val=(1.0 - (n/N)*0.6), color=plt.cm.jet(1.0 - n/N), annotate=False)
+
+        # Display accident notification if applicable
+        if df['Scenario'][idx] is not None:  # assuming 'accident' is the value indicating an accident
+            ax.annotate('Accident!', xy=(0.7, 0.9), xycoords='axes fraction', fontsize=12, color='red', weight='bold')
 
         # Current position
         plot_row(idx, ax, alpha_val=1.0, color='red', annotate=True)
@@ -142,7 +130,6 @@ def visualize(filename='DevelopmentData.xlsx', N=5):
     print("Prev image press left arrow")
     print("Auto play press upper arrow")
 
-    df = convert_df()
     columns = df.columns.to_list()
 
     # Extracting speeds, yaw rates, and timestamps
@@ -156,6 +143,3 @@ def visualize(filename='DevelopmentData.xlsx', N=5):
     plt.tight_layout()
     update_plot(current_idx)
     plt.show()
-
-# To call the function, simply do:
-visualize()

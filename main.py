@@ -2,6 +2,7 @@ import pandas as pd
 import math
 import argparse
 from typing import List
+from visualization import visualize
 
 parser = argparse.ArgumentParser()
 parser.add_argument("csv_path", type=str, help="Path to the .csv file")
@@ -174,7 +175,7 @@ def save_scenario(csv_path: str, data: pd.DataFrame, relevant_event: ObjectWithM
     data['Scenario'] = None
     index_to_update = data[data['Timestamp'] == scenario_timestamp].index[0]
     data.loc[index_to_update, 'Scenario'] = f'{relevant_event.id}_{scenario}'
-    data.to_csv(csv_path)
+    return data
 
 def main():
     args = parser.parse_args()
@@ -183,7 +184,8 @@ def main():
     print(
         f"At {scenario_timestamp}: object {relevant_event.id} got into scenario {scenario}"
     )
-    save_scenario(args.csv_path, data, relevant_event, scenario, scenario_timestamp)
+    data=save_scenario(args.csv_path, data, relevant_event, scenario, scenario_timestamp)
+    visualize(data)
 
 
 if __name__ == "__main__":
