@@ -117,7 +117,7 @@ def get_relevant_columns_only(data: pd.DataFrame, object_id: int)-> pd.DataFrame
 def get_current_scenario(data: pd.DataFrame, object_id: int, range_to_check:int = 40)-> str:
     """Based on the available data, classifies the scenario"""
     last_n_rows = data.tail(range_to_check)
-    last_n_yaw_rate_change = last_n_rows['YawRate'].max() - last_n_rows['YawRate'].min() #mi a mértékegység
+    last_n_yaw_rate_change = last_n_rows['YawRate'].max() - last_n_rows['YawRate'].min()
     if last_n_yaw_rate_change > 15: #?
         return "CPTA"
     
