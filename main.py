@@ -101,10 +101,42 @@ def get_object_ids(row: pd.DataFrame) -> List[int]:
             ids.append(col.split("_")[0])
     return ids
 
+def get_current_events_scenario(data:pd. DataFrame, timestamp:float, object_id: int)-> str:
+    """We decide which scenario is most likely given the provided data"""
+    current_available_data=data[data['Timestamp']<= timestamp]
+    filtered_data=get_relevant_columns_only(current_available_data, object_id)
+    scenario=get_current_scenario(filtered_data, object_id)
+    return scenario
+
+def get_relevant_columns_only(data: pd.DataFrame, object_id: int)-> pd.DataFrame:
+    """Filters the dataframe such way only the relevant columns remain"""
+    selected_columns = [col for col in data.columns if str(object_id) in col or col in ["VehicleSpeed", "YawRate"]]
+    filtered_df = data[selected_columns]
+    return filtered_df
+
+def get_current_scenario(data: pd.DataFrame, object_id: int, range_to_check:int = 40)-> str:
+    """Based on the available data, classifies the scenario"""
+    last_n_rows = data.tail(range_to_check)
+    last_n_yaw_rate_change = last_n_rows['YawRate'].max() - last_n_rows['YawRate'].min() #mi a mértékegység
+    if last_n_yaw_rate_change > 15: #?
+        return "CPTA"
+    
+    last_n_x_change = last_n_rows[f'{object_id}_ObjectDistance_X'].max() - last_n_rows[f'{object_id}_ObjectDistance_X'].min()
+    last_n_y_change = last_n_rows[f'{object_id}_ObjectDistance_Y'].max() - last_n_rows[f'{object_id}_ObjectDistance_Y'].min()
+
+    if last_n_y_change > last_n_x_change:
+        return 'CPNCO'
+    else:
+        return 'CPLA'
+
+
+
+
 
 def classify_event(data: pd.DataFrame) -> ObjectWithMotion:
     """Classifying which event is relevant to us in a Automatic Emergency Brake (AEB) viewpoint"""
     relevant_object = None
+    scenario='No_Scenario'
     min_ttc = float("inf")
     timestamps = data["Timestamp"].to_list()
 
@@ -118,15 +150,17 @@ def classify_event(data: pd.DataFrame) -> ObjectWithMotion:
                 if ttc < min_ttc:
                     min_ttc = ttc
                     relevant_object = object
-    return relevant_object
+                    scenario=get_current_events_scenario(data, timestamp, object.id)
+    return relevant_object, scenario
 
 
 def main():
     args = parser.parse_args()
     data = get_preprocessed_data(args.csv_path)
-    relevant_event = classify_event(data)
-    print(f'The relevant events id: {relevant_event.id}')
+    relevant_event, scenario = classify_event(data)
+    print(f'The relevant events id: {relevant_event.id} and the scenario is {scenario}')
 
 
 if __name__ == "__main__":
     main()
+    
