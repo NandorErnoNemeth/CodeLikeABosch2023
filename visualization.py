@@ -8,7 +8,8 @@ def visualize(df, N=5):
     
     current_idx = 0
     play_mode = False  # Flag to check if video mode is on
-    timer = fig.canvas.new_timer(interval=50) 
+    timer = fig.canvas.new_timer(interval=1) 
+
 
     def calculate_coordinates(speed, yaw, timestamps):
         x, y = 0, 0
@@ -18,8 +19,8 @@ def visualize(df, N=5):
             delta_t = timestamps[i] - timestamps[i-1]
         
             # rad
-            delta_x = speed[i] * math.cos(yaw[i]) * delta_t
-            delta_y = speed[i] * math.sin(yaw[i]) * delta_t
+            delta_x = speed[i] * math.cos(math.radians(yaw[i])) * delta_t
+            delta_y = speed[i] * math.sin(math.radians(yaw[i])) * delta_t
         
             x += delta_x
             y += delta_y
@@ -58,6 +59,7 @@ def visualize(df, N=5):
         # Display accident notification if applicable
         if df['Scenario'][idx] is not None:  # assuming 'accident' is the value indicating an accident
             ax.annotate('Accident!', xy=(0.7, 0.9), xycoords='axes fraction', fontsize=12, color='red', weight='bold')
+
 
         # Current position
         plot_row(idx, ax, alpha_val=1.0, color='red', annotate=True)
