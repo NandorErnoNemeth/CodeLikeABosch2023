@@ -5,9 +5,11 @@ import math
 # Init subplots
 fig, (ax, ax_speed, ax_path) = plt.subplots(1, 3, figsize=(20, 6))
 
+
+N = 5  # Set this to the number of previous plots you want to display
+
 # FLAGS AND PARAMS
 current_idx = 0
-N = 5  # Set this to the number of previous plots you want to display
 play_mode = False  # Flag to check if video mode is on
 timer = fig.canvas.new_timer(interval=50) 
 
@@ -141,6 +143,11 @@ def auto_play(*args):
     if current_idx >= len(df):
         current_idx = 0
     update_plot(current_idx)
+
+# How to use the plotter
+print("Next image press right arrow")
+print("Prev image press left arrow")
+print("Auto play press upper arrow")
 
 df = convert_df()
 columns = df.columns.to_list()
