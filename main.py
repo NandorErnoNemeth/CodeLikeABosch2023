@@ -8,7 +8,7 @@ parser.add_argument("csv_path", type=str, help="Path to the .csv file")
 
 
 def convert_columns(df: pd.DataFrame) -> pd.DataFrame:
-
+    """Renameing the columns to a format of N_"""
     old_columns = df.columns.to_list()
     obj_dist_x = [elem for elem in old_columns if "ObjectDistance_X" in elem]
     obj_dist_y = [elem for elem in old_columns if "ObjectDistance_Y" in elem]
@@ -32,6 +32,7 @@ def convert_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def change_to_si(df: pd.DataFrame) -> pd.DataFrame:
+    """Calculate the SI values with the provided prompts"""
     old_columns = df.columns.to_list()
     obj_dist = [elem for elem in old_columns if "ObjectDistance" in elem]
     df[obj_dist] = df[obj_dist] / 128
@@ -43,6 +44,7 @@ def change_to_si(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_preprocessed_data(csv_path: str) -> pd.DataFrame:
+    """Rename object columns to a format of N_, and convert values to SI"""
     df = pd.read_csv(csv_path)
     df = convert_columns(df)
     df = change_to_si(df)
@@ -58,6 +60,10 @@ class ObjectWithMotion:
 
 
 def calculate_ttc(object: ObjectWithMotion) -> float:
+    """
+    Calculate Time-to-Collision (TTC)
+    https://www.spaceacademy.net.au/flight/emg/colltime.htm
+    """
     ttc = math.sqrt(object.x_distance ** 2 + object.y_distance ** 2) / max(
         object.relative_speed, 1e-10
     )
@@ -65,12 +71,14 @@ def calculate_ttc(object: ObjectWithMotion) -> float:
 
 
 def get_current_objects(data: pd.DataFrame, timestamp: float) -> ObjectWithMotion:
+    """We get ObjectWithMotion objects for the given timestamp"""
     data_current = data[data["Timestamp"] == timestamp]
     object_motions = create_object_motion(data_current)
     return object_motions
 
 
 def create_object_motion(row: pd.DataFrame) -> List[ObjectWithMotion]:
+    """Create ObjectWithMotion objects for each id in the current row, with data provided in the dataframe"""
     objects_with_motion = []
     object_ids = get_object_ids(row)
     for object_id in object_ids:
@@ -86,6 +94,7 @@ def create_object_motion(row: pd.DataFrame) -> List[ObjectWithMotion]:
 
 
 def get_object_ids(row: pd.DataFrame) -> List[int]:
+    """Get all the Ids in the current row of the dataframe"""
     ids = []
     for col in row.columns:
         if "ObjectDistance_X" in col:
@@ -94,6 +103,7 @@ def get_object_ids(row: pd.DataFrame) -> List[int]:
 
 
 def classify_event(data: pd.DataFrame) -> ObjectWithMotion:
+    """Classifying which event is relevant to us in a Automatic Emergency Brake (AEB) viewpoint"""
     relevant_object = None
     min_ttc = float("inf")
     timestamps = data["Timestamp"].to_list()
@@ -115,7 +125,7 @@ def main():
     args = parser.parse_args()
     data = get_preprocessed_data(args.csv_path)
     relevant_event = classify_event(data)
-    print(relevant_event.id)
+    print(f'The relevant events id: {relevant_event.id}')
 
 
 if __name__ == "__main__":
